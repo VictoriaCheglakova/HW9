@@ -1,6 +1,9 @@
 import os
+from datetime import datetime
 
 from selene import be, browser, command, have
+
+from HW9_tests.data.users import User
 
 
 class RegistrationPage:
@@ -28,12 +31,12 @@ class RegistrationPage:
         browser.element('#userNumber').should(be.blank).type('4957777777')
         return self
 
-    def fill_birthday(self, month, year, day):
+    def fill_birthday(self, date:datetime):
         browser.element('#dateOfBirthInput').click()
-        browser.element('.react-datepicker__month-select').type(month)
-        browser.element('.react-datepicker__year-select').type(year)
+        browser.element('.react-datepicker__month-select').type('{0:%B}'.format(date))
+        browser.element('.react-datepicker__year-select').type(date.year)
         browser.element(
-            f'.react-datepicker__day--0{day}'
+            f'.react-datepicker__day--0{date.day}'
         ).click()
         return self
 
@@ -71,17 +74,33 @@ class RegistrationPage:
         browser.element('#submit').click()
         return self
 
-    def shoud_have_registered(self, full_name, email, gender, number, date_of_birth, subject, hobbies, path_of_picture, address, state_city):
-        browser.element("//table//td[text()='Student Name']/../td[2]").should(have.exact_text(full_name))
-        browser.element("//table//td[text()='Student Email']/../td[2]").should(have.exact_text(email))
-        browser.element("//table//td[text()='Gender']/../td[2]").should(have.exact_text(gender))
-        browser.element("//table//td[text()='Mobile']/../td[2]").should(have.exact_text(number))
-        browser.element("//table//td[text()='Date of Birth']/../td[2]").should(have.exact_text(date_of_birth))
-        browser.element("//table//td[text()='Subjects']/../td[2]").should(have.exact_text(subject))
-        browser.element("//table//td[text()='Hobbies']/../td[2]").should(have.exact_text(hobbies))
-        browser.element("//table//td[text()='Picture']/../td[2]").should(have.exact_text(path_of_picture))
-        browser.element("//table//td[text()='Address']/../td[2]").should(have.exact_text(address))
-        browser.element("//table//td[text()='State and City']/../td[2]").should(have.exact_text(state_city))
+    def register(self, user: User):
+        self.fill_first_name(user.first_name)
+        self.fill_second_name(user.last_name)
+        self.fill_email(user.email)
+        self.choice_gender()
+        self.fill_user_number(user.phone_number)
+        self.fill_birthday(user.date)
+        self.choice_subject(user.subject)
+        self.choice_hobbies()
+        self.download_picture(user.picture)
+        self.fill_user_address(user.user_address)
+        self.choise_state(user.user_state)
+        self.choice_city(user.user_city)
+        self.press_submit()
+
+
+    def shoud_have_registered(self, ivan: User):
+        browser.element("//table//td[text()='Student Name']/../td[2]").should(have.exact_text(f'{ivan.first_name} {ivan.last_name}'))
+        browser.element("//table//td[text()='Student Email']/../td[2]").should(have.exact_text(ivan.email))
+        browser.element("//table//td[text()='Gender']/../td[2]").should(have.exact_text(ivan.gender))
+        browser.element("//table//td[text()='Mobile']/../td[2]").should(have.exact_text(ivan.phone_number))
+        browser.element("//table//td[text()='Date of Birth']/../td[2]").should(have.exact_text('{0:%d} {0:%B},{0:%Y}'.format(ivan.date)))
+        browser.element("//table//td[text()='Subjects']/../td[2]").should(have.exact_text(ivan.subject))
+        browser.element("//table//td[text()='Hobbies']/../td[2]").should(have.exact_text(ivan.hobbies))
+        browser.element("//table//td[text()='Picture']/../td[2]").should(have.exact_text(ivan.picture))
+        browser.element("//table//td[text()='Address']/../td[2]").should(have.exact_text(ivan.user_address))
+        browser.element("//table//td[text()='State and City']/../td[2]").should(have.exact_text(f'{ivan.user_state} {ivan.user_city}'))
         browser.element('#closeLargeModal').click()
 
 
